@@ -1,8 +1,8 @@
-import type { Event } from '@/types/Event';
+import type { SystemEvent } from '@/types/SystemEvent';
 import { EventCard } from '@/components/EventCard';
 
 interface EventListProps {
-  events: Event[];
+  events: SystemEvent[];
 }
 
 export function EventList({ events }: EventListProps) {
@@ -15,7 +15,7 @@ export function EventList({ events }: EventListProps) {
   }
 
   // Sort events by updatedAt in descending order (most recent first)
-  const sortedEvents = [...events].sort((a, b) => 
+  const sortedEvents = [...events].sort((a, b) =>
     new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   );
 

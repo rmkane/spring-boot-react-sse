@@ -1,8 +1,8 @@
-import type { Event } from '@/types/Event';
+import type { SystemEvent } from '@/types/SystemEvent';
 import { EventList } from '@/components/EventList';
 
 interface EventsSectionProps {
-  events: Event[];
+  events: SystemEvent[];
 }
 
 export function EventsSection({ events }: EventsSectionProps) {
@@ -13,7 +13,7 @@ export function EventsSection({ events }: EventsSectionProps) {
           System Events ({events.length})
         </h2>
       </div>
-      
+
       <div className="p-6">
         <EventList events={events} />
       </div>

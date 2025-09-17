@@ -11,7 +11,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.example.sse.model.Event;
+import com.example.sse.model.SystemEvent;
+import com.example.sse.model.sse.Operation;
+import com.example.sse.model.sse.SseEvent;
 import com.example.sse.model.Severity;
 import com.example.sse.service.EventService;
 
@@ -21,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventServiceImpl implements EventService {
 
-    private final Map<UUID, Event> events = new ConcurrentHashMap<>();
+    private final Map<UUID, SystemEvent> events = new ConcurrentHashMap<>();
     private final Random random = new Random();
 
     public EventServiceImpl() {
@@ -31,11 +33,11 @@ public class EventServiceImpl implements EventService {
 
     private void initializeSampleEvents() {
         String[] eventNames = {
-            "Database Connection", "API Response Time", "Memory Usage", 
-            "CPU Load", "Disk Space", "Network Latency", "User Login", 
+            "Database Connection", "API Response Time", "Memory Usage",
+            "CPU Load", "Disk Space", "Network Latency", "User Login",
             "Payment Processing", "Email Delivery", "File Upload"
         };
-        
+
         String[] descriptions = {
             "Monitoring database connection health",
             "Tracking API response times",
@@ -52,7 +54,7 @@ public class EventServiceImpl implements EventService {
         Severity[] severities = Severity.values();
 
         for (int i = 0; i < 10; i++) {
-            Event event = Event.builder()
+            SystemEvent event = SystemEvent.builder()
                 .id(UUID.randomUUID())
                 .name(eventNames[i])
                 .description(descriptions[i])
@@ -62,26 +64,26 @@ public class EventServiceImpl implements EventService {
                 .active(true)
                 .count(random.nextInt(100))
                 .build();
-            
+
             events.put(event.getId(), event);
         }
         log.info("Initialized {} sample events", events.size());
     }
 
     @Override
-    public List<Event> getAllEvents() {
-        List<Event> allEvents = new ArrayList<>(events.values());
+    public List<SystemEvent> getAllEvents() {
+        List<SystemEvent> allEvents = new ArrayList<>(events.values());
         log.debug("Returning {} events to client", allEvents.size());
         return allEvents;
     }
 
     @Override
-    public Event getEventById(UUID id) {
+    public SystemEvent getEventById(UUID id) {
         return events.get(id);
     }
 
     @Override
-    public Event createEvent(Event event) {
+    public SystemEvent createEvent(SystemEvent event) {
         if (event.getId() == null) {
             event.setId(UUID.randomUUID());
         }
@@ -93,7 +95,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event updateEvent(Event event) {
+    public SystemEvent updateEvent(SystemEvent event) {
         if (events.containsKey(event.getId())) {
             event.setUpdatedAt(LocalDateTime.now());
             events.put(event.getId(), event);
@@ -105,35 +107,35 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteEvent(UUID id) {
-        Event removed = events.remove(id);
+        SystemEvent removed = events.remove(id);
         if (removed != null) {
             log.info("Deleted event: {}", removed.getName());
         }
     }
 
     @Override
-    public void updateRandomEvent() {
+    public SseEvent updateRandomEvent() {
         // Randomly choose an operation: CREATE, UPDATE, or DELETE
         double operation = random.nextDouble();
-        
+
         if (operation < 0.4) { // 40% chance - CREATE
-            createRandomEvent();
+            return createRandomEvent();
         } else if (operation < 0.8) { // 40% chance - UPDATE
-            updateExistingEvent();
+            return updateExistingEvent();
         } else { // 20% chance - DELETE
-            deleteRandomEvent();
+            return deleteRandomEvent();
         }
     }
-    
-    private void createRandomEvent() {
+
+    private SseEvent createRandomEvent() {
         String[] eventNames = {
-            "Database Connection", "API Response Time", "Memory Usage", 
-            "CPU Load", "Disk Space", "Network Latency", "User Login", 
+            "Database Connection", "API Response Time", "Memory Usage",
+            "CPU Load", "Disk Space", "Network Latency", "User Login",
             "Payment Processing", "Email Delivery", "File Upload",
             "Cache Hit Rate", "Queue Length", "Error Rate", "Response Time",
             "Active Sessions", "Data Sync", "Backup Status", "Security Scan"
         };
-        
+
         String[] descriptions = {
             "Monitoring database connection health",
             "Tracking API response times",
@@ -156,8 +158,8 @@ public class EventServiceImpl implements EventService {
         };
 
         Severity[] severities = Severity.values();
-        
-        Event newEvent = Event.builder()
+
+        SystemEvent newEvent = SystemEvent.builder()
             .id(UUID.randomUUID())
             .name(eventNames[random.nextInt(eventNames.length)])
             .description(descriptions[random.nextInt(descriptions.length)])
@@ -167,60 +169,73 @@ public class EventServiceImpl implements EventService {
             .active(random.nextBoolean())
             .count(random.nextInt(1000))
             .build();
-        
+
         events.put(newEvent.getId(), newEvent);
-        log.info("Created new event: {} (severity: {}, active: {}, count: {})", 
+        log.info("Created new event: {} (severity: {}, active: {}, count: {})",
             newEvent.getName(), newEvent.getSeverity(), newEvent.isActive(), newEvent.getCount());
+
+        return SseEvent.builder()
+            .operation(Operation.CREATE)
+            .event(newEvent)
+            .build();
     }
-    
-    private void updateExistingEvent() {
+
+    private SseEvent updateExistingEvent() {
         if (events.isEmpty()) {
-            createRandomEvent(); // Create if no events exist
-            return;
+            return createRandomEvent(); // Create if no events exist
         }
-        
-        List<Event> eventList = new ArrayList<>(events.values());
-        Event randomEvent = eventList.get(random.nextInt(eventList.size()));
-        
+
+        List<SystemEvent> eventList = new ArrayList<>(events.values());
+        SystemEvent randomEvent = eventList.get(random.nextInt(eventList.size()));
+
         // Randomly update event properties
         randomEvent.setCount(randomEvent.getCount() + random.nextInt(50) + 1);
         randomEvent.setUpdatedAt(LocalDateTime.now());
-        
+
         // Randomly change severity
         if (random.nextBoolean()) {
             Severity[] severities = Severity.values();
             randomEvent.setSeverity(severities[random.nextInt(severities.length)]);
         }
-        
+
         // Randomly toggle active status
         if (random.nextDouble() < 0.3) { // 30% chance
             randomEvent.setActive(!randomEvent.isActive());
         }
-        
+
         events.put(randomEvent.getId(), randomEvent);
-        log.info("Updated event: {} (count: {}, severity: {}, active: {})", 
-            randomEvent.getName(), randomEvent.getCount(), 
+        log.info("Updated event: {} (count: {}, severity: {}, active: {})",
+            randomEvent.getName(), randomEvent.getCount(),
             randomEvent.getSeverity(), randomEvent.isActive());
+
+        return SseEvent.builder()
+            .operation(Operation.UPDATE)
+            .event(randomEvent)
+            .build();
     }
-    
-    private void deleteRandomEvent() {
+
+    private SseEvent deleteRandomEvent() {
         if (events.size() <= 2) { // Keep at least 2 events
-            updateExistingEvent(); // Update instead of delete
-            return;
+            return updateExistingEvent(); // Update instead of delete
         }
-        
-        List<Event> eventList = new ArrayList<>(events.values());
-        Event eventToDelete = eventList.get(random.nextInt(eventList.size()));
-        
+
+        List<SystemEvent> eventList = new ArrayList<>(events.values());
+        SystemEvent eventToDelete = eventList.get(random.nextInt(eventList.size()));
+
         events.remove(eventToDelete.getId());
-        log.info("Deleted event: {} (was active: {}, count: {})", 
+        log.info("Deleted event: {} (was active: {}, count: {})",
             eventToDelete.getName(), eventToDelete.isActive(), eventToDelete.getCount());
+
+        return SseEvent.builder()
+            .operation(Operation.DELETE)
+            .event(eventToDelete)
+            .build();
     }
 
     @Override
-    public List<Event> getActiveEvents() {
+    public List<SystemEvent> getActiveEvents() {
         return events.values().stream()
-            .filter(Event::isActive)
+            .filter(SystemEvent::isActive)
             .collect(Collectors.toList());
     }
 }

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Event {
+public class SystemEvent {
     private UUID id;
     private String name;
     private String description;

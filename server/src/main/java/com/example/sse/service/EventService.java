@@ -3,14 +3,15 @@ package com.example.sse.service;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.sse.model.Event;
+import com.example.sse.model.SystemEvent;
+import com.example.sse.model.sse.SseEvent;
 
 public interface EventService {
-    List<Event> getAllEvents();
-    Event getEventById(UUID id);
-    Event createEvent(Event event);
-    Event updateEvent(Event event);
+    List<SystemEvent> getAllEvents();
+    SystemEvent getEventById(UUID id);
+    SystemEvent createEvent(SystemEvent event);
+    SystemEvent updateEvent(SystemEvent event);
     void deleteEvent(UUID id);
-    void updateRandomEvent();
-    List<Event> getActiveEvents();
+    SseEvent updateRandomEvent();
+    List<SystemEvent> getActiveEvents();
 }

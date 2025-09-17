@@ -13,7 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.example.sse.model.Event;
+import com.example.sse.model.SystemEvent;
+import com.example.sse.model.sse.SseEvent;
 import com.example.sse.service.EventService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,8 +35,8 @@ public class SseController {
     private static volatile boolean schedulerStarted = false;
 
     @GetMapping("/events/initial")
-    public ResponseEntity<List<Event>> getInitialEvents() {
-        List<Event> events = eventService.getAllEvents();
+    public ResponseEntity<List<SystemEvent>> getInitialEvents() {
+        List<SystemEvent> events = eventService.getAllEvents();
         log.info("Returning {} initial events", events.size());
         return ResponseEntity.ok(events);
     }
@@ -45,7 +46,7 @@ public class SseController {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); // No timeout
         String emitterId = UUID.randomUUID().toString();
         emitters.put(emitterId, emitter);
-        
+
         log.info("New SSE connection established: {} (total connections: {})", emitterId, emitters.size());
 
         // Start the broadcast scheduler if not already started
@@ -53,7 +54,7 @@ public class SseController {
 
         // Send initial events immediately
         try {
-            List<Event> events = eventService.getAllEvents();
+            List<SystemEvent> events = eventService.getAllEvents();
             String eventsJson = objectMapper.writeValueAsString(events);
             emitter.send(SseEmitter.event()
                 .name("initial-events")
@@ -70,12 +71,12 @@ public class SseController {
             log.info("SSE connection completed: {} (remaining connections: {})", emitterId, emitters.size() - 1);
             emitters.remove(emitterId);
         });
-        
+
         emitter.onTimeout(() -> {
             log.info("SSE connection timed out: {} (remaining connections: {})", emitterId, emitters.size() - 1);
             emitters.remove(emitterId);
         });
-        
+
         emitter.onError((ex) -> {
             log.error("SSE connection error: {} (remaining connections: {})", emitterId, emitters.size() - 1, ex);
             emitters.remove(emitterId);
@@ -89,29 +90,30 @@ public class SseController {
             scheduler.scheduleAtFixedRate(() -> {
                 if (!emitters.isEmpty()) {
                     try {
-                        List<Event> events = eventService.getAllEvents();
-                        String eventsJson = objectMapper.writeValueAsString(events);
-                        
+                        SseEvent sseEvent = eventService.updateRandomEvent();
+                        String eventJson = objectMapper.writeValueAsString(sseEvent);
+
                         // Broadcast to all connected clients
                         emitters.entrySet().removeIf(entry -> {
                             try {
                                 entry.getValue().send(SseEmitter.event()
-                                    .name("events-update")
-                                    .data(eventsJson));
+                                    .name("event-change")
+                                    .data(eventJson));
                                 return false; // Keep the entry
                             } catch (IOException e) {
                                 log.warn("Failed to send update to {}, removing connection", entry.getKey());
                                 return true; // Remove the entry
                             }
                         });
-                        
-                        log.debug("Broadcasted event update to {} connections", emitters.size());
+
+                        log.debug("Broadcasted {} operation for event {} to {} connections",
+                            sseEvent.getOperation(), sseEvent.getEvent().getName(), emitters.size());
                     } catch (Exception e) {
                         log.error("Error in broadcast scheduler", e);
                     }
                 }
             }, 10, 10, TimeUnit.SECONDS);
-            
+
             schedulerStarted = true;
             log.info("Started broadcast scheduler for SSE connections");
         }
@@ -123,8 +125,8 @@ public class SseController {
     }
 
     @GetMapping("/events")
-    public ResponseEntity<List<Event>> getAllEvents() {
-        List<Event> events = eventService.getAllEvents();
+    public ResponseEntity<List<SystemEvent>> getAllEvents() {
+        List<SystemEvent> events = eventService.getAllEvents();
         return ResponseEntity.ok(events);
     }
 }

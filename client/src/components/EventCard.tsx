@@ -1,7 +1,7 @@
-import type { Event } from '@/types/Event';
+import type { SystemEvent } from '@/types/SystemEvent';
 
 interface EventCardProps {
-  event: Event;
+  event: SystemEvent;
 }
 
 export function EventCard({ event }: EventCardProps) {
@@ -22,8 +22,8 @@ export function EventCard({ event }: EventCardProps) {
 
   return (
     <div className={`p-4 border rounded-lg ${
-      isRecentlyUpdated() 
-        ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-200' 
+      isRecentlyUpdated()
+        ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-200'
         : 'border-gray-200 bg-white'
     }`}>
       <div className="flex items-center justify-between mb-2">
@@ -37,8 +37,8 @@ export function EventCard({ event }: EventCardProps) {
             {event.severity}
           </span>
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            event.active 
-              ? 'bg-green-100 text-green-800' 
+            event.active
+              ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800'
           }`}>
             {event.active ? 'Active' : 'Inactive'}
@@ -53,17 +53,17 @@ export function EventCard({ event }: EventCardProps) {
           {new Date(event.updatedAt).toLocaleString()}
         </div>
       </div>
-      
+
       <p className="text-gray-600 text-sm mb-3">
         {event.description}
       </p>
-      
+
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 text-sm text-gray-500">
           <span className="font-medium text-blue-600">Count: {event.count}</span>
           <span>Created: {new Date(event.createdAt).toLocaleString()}</span>
         </div>
-        
+
         <div className="mt-2 text-xs text-gray-400 font-mono">
           ID: {event.id}
         </div>
