@@ -1,28 +1,48 @@
+import { useState, useEffect } from 'react';
+
 import type { SystemEvent } from '@/types/SystemEvent';
+
+import { Severity } from '@/models/Severity';
 
 interface EventCardProps {
   event: SystemEvent;
 }
 
 export function EventCard({ event }: EventCardProps) {
+  const [isHighlighted, setIsHighlighted] = useState(false);
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'CRITICAL': return '🚨';
-      case 'WARNING': return '⚠️';
-      case 'INFO': return 'ℹ️';
+      case Severity.CRITICAL: return '🚨';
+      case Severity.WARNING: return '⚠️';
+      case Severity.INFO: return 'ℹ️';
       default: return '📋';
     }
   };
 
-  const isRecentlyUpdated = () => {
-    const updatedTime = new Date(event.updatedAt);
-    const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
-    return updatedTime > thirtySecondsAgo;
-  };
+  // Set up a timer to check highlighting every second
+  useEffect(() => {
+    const isRecentlyUpdated = () => {
+      const updatedTime = new Date(event.updatedAt);
+      const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
+      return updatedTime > thirtySecondsAgo;
+    };
+
+    const checkHighlighting = () => {
+      setIsHighlighted(isRecentlyUpdated());
+    };
+
+    // Check immediately
+    checkHighlighting();
+
+    // Set up interval to check every second
+    const interval = setInterval(checkHighlighting, 1000);
+
+    return () => clearInterval(interval);
+  }, [event.updatedAt]);
 
   return (
     <div className={`p-4 border rounded-lg ${
-      isRecentlyUpdated()
+      isHighlighted
         ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-200'
         : 'border-gray-200 bg-white'
     }`}>
@@ -43,7 +63,7 @@ export function EventCard({ event }: EventCardProps) {
           }`}>
             {event.active ? 'Active' : 'Inactive'}
           </span>
-          {isRecentlyUpdated() && (
+          {isHighlighted && (
             <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-500 text-white animate-pulse">
               NEW
             </span>
