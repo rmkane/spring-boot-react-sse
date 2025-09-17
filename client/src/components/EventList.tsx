@@ -7,7 +7,7 @@ interface EventListProps {
 
 export function EventList({ events }: EventListProps) {
   if (events.length === 0) {
-    return <div className="text-center text-gray-500 py-8">Loading events...</div>
+    return <div className="py-8 text-center text-gray-500">Loading events...</div>
   }
 
   // Sort events by updatedAt in descending order (most recent first)

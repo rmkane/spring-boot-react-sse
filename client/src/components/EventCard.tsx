@@ -47,16 +47,16 @@ export function EventCard({ event }: EventCardProps) {
 
   return (
     <div
-      className={`p-4 border rounded-lg ${
+      className={`rounded-lg border p-4 ${
         isHighlighted ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-200' : 'border-gray-200 bg-white'
       }`}
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <span className="text-lg">{getSeverityIcon(event.severity)}</span>
           <h3 className="font-semibold text-gray-900">{event.name}</h3>
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium text-white ${
+            className={`rounded-full px-2 py-1 text-xs font-medium text-white ${
               event.severity === 'CRITICAL'
                 ? 'bg-red-500'
                 : event.severity === 'WARNING'
@@ -67,20 +67,20 @@ export function EventCard({ event }: EventCardProps) {
             {event.severity}
           </span>
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${
+            className={`rounded-full px-2 py-1 text-xs font-medium ${
               event.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
             }`}
           >
             {event.active ? 'Active' : 'Inactive'}
           </span>
           {isHighlighted && (
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-500 text-white animate-pulse">NEW</span>
+            <span className="animate-pulse rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">NEW</span>
           )}
         </div>
         <div className="text-sm text-gray-500">{new Date(event.updatedAt).toLocaleString()}</div>
       </div>
 
-      <p className="text-gray-600 text-sm mb-3">{event.description}</p>
+      <p className="mb-3 text-sm text-gray-600">{event.description}</p>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -88,7 +88,7 @@ export function EventCard({ event }: EventCardProps) {
           <span>Created: {new Date(event.createdAt).toLocaleString()}</span>
         </div>
 
-        <div className="mt-2 text-xs text-gray-400 font-mono">ID: {event.id}</div>
+        <div className="mt-2 font-mono text-xs text-gray-400">ID: {event.id}</div>
       </div>
     </div>
   )

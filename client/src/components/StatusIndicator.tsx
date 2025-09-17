@@ -5,12 +5,12 @@ interface StatusIndicatorProps {
 
 export function StatusIndicator({ isConnected, lastUpdate }: StatusIndicatorProps) {
   return (
-    <div className="flex flex-col items-center space-y-2 mb-6">
+    <div className="mb-6 flex flex-col items-center space-y-2">
       <div
-        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+        className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium ${
           isConnected
-            ? 'bg-green-100 text-green-800 border border-green-200'
-            : 'bg-red-100 text-red-800 border border-red-200'
+            ? 'border border-green-200 bg-green-100 text-green-800'
+            : 'border border-red-200 bg-red-100 text-red-800'
         }`}
       >
         {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
