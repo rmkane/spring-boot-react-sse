@@ -8,10 +8,12 @@ import com.example.sse.model.sse.SseEvent;
 
 public interface EventService {
     List<SystemEvent> getAllEvents();
+    List<SystemEvent> getAllEventsForSSE();
     SystemEvent getEventById(UUID id);
     SystemEvent createEvent(SystemEvent event);
     SystemEvent updateEvent(SystemEvent event);
     void deleteEvent(UUID id);
     SseEvent updateRandomEvent();
     List<SystemEvent> getActiveEvents();
+    void cleanupInactiveEvents();
 }

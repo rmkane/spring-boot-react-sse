@@ -7,10 +7,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.example.sse.model.SystemEvent;
@@ -52,16 +54,24 @@ public class SseController {
         // Start the broadcast scheduler if not already started
         startBroadcastScheduler();
 
-        // Send initial events immediately
+        // Send initial events immediately (only active events for initial load)
         try {
             List<SystemEvent> events = eventService.getAllEvents();
             String eventsJson = objectMapper.writeValueAsString(events);
             emitter.send(SseEmitter.event()
                 .name("initial-events")
                 .data(eventsJson));
-            log.debug("Sent initial events to {}", emitterId);
-        } catch (IOException e) {
-            log.error("Error sending initial events to {}", emitterId, e);
+            log.info("Sent {} initial events to {}: {}", events.size(), emitterId,
+                events.stream().map(SystemEvent::getName).collect(Collectors.joining(", ")));
+        } catch (Exception e) {
+            // Handle connection errors gracefully
+            if (e instanceof IOException ||
+                e.getCause() instanceof IOException ||
+                e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
+                log.debug("Client {} disconnected during initial events, removing connection", emitterId);
+            } else {
+                log.error("Error sending initial events to {}", emitterId, e);
+            }
             emitter.completeWithError(e);
             emitters.remove(emitterId);
             return emitter;
@@ -78,7 +88,16 @@ public class SseController {
         });
 
         emitter.onError((ex) -> {
-            log.error("SSE connection error: {} (remaining connections: {})", emitterId, emitters.size() - 1, ex);
+            // Handle different types of connection errors gracefully
+            if (ex instanceof AsyncRequestNotUsableException ||
+                (ex.getCause() instanceof IOException) ||
+                (ex.getMessage() != null && ex.getMessage().contains("Broken pipe"))) {
+                log.debug("SSE connection closed for client {} (remaining connections: {})",
+                    emitterId, emitters.size() - 1);
+            } else {
+                log.error("SSE connection error: {} (remaining connections: {})",
+                    emitterId, emitters.size() - 1, ex);
+            }
             emitters.remove(emitterId);
         });
 
@@ -88,29 +107,47 @@ public class SseController {
     private synchronized void startBroadcastScheduler() {
         if (!schedulerStarted) {
             scheduler.scheduleAtFixedRate(() -> {
-                if (!emitters.isEmpty()) {
-                    try {
+                try {
+                    // Clean up inactive events first
+                    eventService.cleanupInactiveEvents();
+
+                    if (!emitters.isEmpty()) {
                         SseEvent sseEvent = eventService.updateRandomEvent();
                         String eventJson = objectMapper.writeValueAsString(sseEvent);
 
                         // Broadcast to all connected clients
+                        int initialSize = emitters.size();
                         emitters.entrySet().removeIf(entry -> {
                             try {
                                 entry.getValue().send(SseEmitter.event()
                                     .name("event-change")
                                     .data(eventJson));
                                 return false; // Keep the entry
-                            } catch (IOException e) {
-                                log.warn("Failed to send update to {}, removing connection", entry.getKey());
+                            } catch (Exception e) {
+                                // Handle various types of connection errors gracefully
+                                if (e instanceof IOException ||
+                                    e.getCause() instanceof IOException ||
+                                    e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
+                                    log.debug("Client {} disconnected, removing connection", entry.getKey());
+                                } else {
+                                    log.warn("Failed to send update to {}, removing connection: {}",
+                                        entry.getKey(), e.getMessage());
+                                }
                                 return true; // Remove the entry
                             }
                         });
 
-                        log.debug("Broadcasted {} operation for event {} to {} connections",
-                            sseEvent.getOperation(), sseEvent.getEvent().getName(), emitters.size());
-                    } catch (Exception e) {
-                        log.error("Error in broadcast scheduler", e);
+                        // Only log if we actually have connections
+                        if (!emitters.isEmpty()) {
+                            log.info("Broadcasted {} operation for event {} (ID: {}) to {} connections",
+                                sseEvent.getOperation(), sseEvent.getEvent().getName(),
+                                sseEvent.getEvent().getId(), emitters.size());
+                        } else if (initialSize > 0) {
+                            log.debug("All clients disconnected, no broadcast sent");
+                        }
                     }
+                } catch (Exception e) {
+                    log.error("Error in broadcast scheduler", e);
                 }
             }, 10, 10, TimeUnit.SECONDS);
 

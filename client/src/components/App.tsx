@@ -4,14 +4,14 @@ import { Header } from '@/components/Header'
 import { StatusIndicator } from '@/components/StatusIndicator'
 
 function App() {
-  const { data: events, isConnected, lastUpdate } = useEventSSE()
+  const { data: events, isConnected, lastUpdate, newEventIds } = useEventSSE()
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="mx-auto max-w-6xl">
         <Header />
         <StatusIndicator isConnected={isConnected} lastUpdate={lastUpdate} />
-        <EventsSection events={events} />
+        <EventsSection events={events} newEventIds={newEventIds} />
       </div>
     </div>
   )

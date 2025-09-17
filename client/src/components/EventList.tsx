@@ -3,9 +3,10 @@ import { EventCard } from '@/components/EventCard'
 
 interface EventListProps {
   events: SystemEvent[]
+  newEventIds: Set<string>
 }
 
-export function EventList({ events }: EventListProps) {
+export function EventList({ events, newEventIds }: EventListProps) {
   if (events.length === 0) {
     return <div className="py-8 text-center text-gray-500">Loading events...</div>
   }
@@ -14,9 +15,9 @@ export function EventList({ events }: EventListProps) {
   const sortedEvents = [...events].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 
   return (
-    <div className="space-y-4">
+    <div className="event-list space-y-4">
       {sortedEvents.map((event) => (
-        <EventCard key={event.id} event={event} />
+        <EventCard key={event.id} event={event} isNew={newEventIds.has(event.id)} />
       ))}
     </div>
   )

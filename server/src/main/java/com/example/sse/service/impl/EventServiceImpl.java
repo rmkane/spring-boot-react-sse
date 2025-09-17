@@ -72,8 +72,22 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<SystemEvent> getAllEvents() {
+        List<SystemEvent> activeEvents = events.values().stream()
+            .filter(SystemEvent::isActive)
+            .collect(Collectors.toList());
+        log.info("Returning {} active events to client: {}", activeEvents.size(),
+            activeEvents.stream().map(SystemEvent::getName).collect(Collectors.joining(", ")));
+        return activeEvents;
+    }
+
+    @Override
+    public List<SystemEvent> getAllEventsForSSE() {
         List<SystemEvent> allEvents = new ArrayList<>(events.values());
-        log.debug("Returning {} events to client", allEvents.size());
+        log.info("Returning {} total events for SSE ({} active, {} inactive): {}",
+            allEvents.size(),
+            allEvents.stream().filter(SystemEvent::isActive).count(),
+            allEvents.stream().filter(e -> !e.isActive()).count(),
+            allEvents.stream().map(SystemEvent::getName).collect(Collectors.joining(", ")));
         return allEvents;
     }
 
@@ -166,7 +180,7 @@ public class EventServiceImpl implements EventService {
             .severity(severities[random.nextInt(severities.length)])
             .createdAt(LocalDateTime.now())
             .updatedAt(LocalDateTime.now())
-            .active(random.nextBoolean())
+            .active(true) // CREATE operations should always create active events
             .count(random.nextInt(1000))
             .build();
 
@@ -198,10 +212,8 @@ public class EventServiceImpl implements EventService {
             randomEvent.setSeverity(severities[random.nextInt(severities.length)]);
         }
 
-        // Randomly toggle active status
-        if (random.nextDouble() < 0.3) { // 30% chance
-            randomEvent.setActive(!randomEvent.isActive());
-        }
+        // UPDATE operations should never change active status
+        // Only DELETE operations should mark events as inactive
 
         events.put(randomEvent.getId(), randomEvent);
         log.info("Updated event: {} (count: {}, severity: {}, active: {})",
@@ -215,15 +227,23 @@ public class EventServiceImpl implements EventService {
     }
 
     private SseEvent deleteRandomEvent() {
-        if (events.size() <= 2) { // Keep at least 2 events
+        // Get only active events for deletion
+        List<SystemEvent> activeEvents = events.values().stream()
+            .filter(SystemEvent::isActive)
+            .collect(Collectors.toList());
+
+        if (activeEvents.size() <= 2) { // Keep at least 2 active events
             return updateExistingEvent(); // Update instead of delete
         }
 
-        List<SystemEvent> eventList = new ArrayList<>(events.values());
-        SystemEvent eventToDelete = eventList.get(random.nextInt(eventList.size()));
+        SystemEvent eventToDelete = activeEvents.get(random.nextInt(activeEvents.size()));
 
-        events.remove(eventToDelete.getId());
-        log.info("Deleted event: {} (was active: {}, count: {})",
+        // Mark as inactive instead of removing
+        eventToDelete.setActive(false);
+        eventToDelete.setUpdatedAt(LocalDateTime.now());
+        events.put(eventToDelete.getId(), eventToDelete);
+
+        log.info("Marked event as inactive: {} (was active: {}, count: {})",
             eventToDelete.getName(), eventToDelete.isActive(), eventToDelete.getCount());
 
         return SseEvent.builder()
@@ -237,5 +257,20 @@ public class EventServiceImpl implements EventService {
         return events.values().stream()
             .filter(SystemEvent::isActive)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public void cleanupInactiveEvents() {
+        LocalDateTime fiveSecondsAgo = LocalDateTime.now().minusSeconds(5);
+
+        List<UUID> eventsToRemove = events.values().stream()
+            .filter(event -> !event.isActive() && event.getUpdatedAt().isBefore(fiveSecondsAgo))
+            .map(SystemEvent::getId)
+            .collect(Collectors.toList());
+
+        if (!eventsToRemove.isEmpty()) {
+            eventsToRemove.forEach(events::remove);
+            log.info("Cleaned up {} inactive events", eventsToRemove.size());
+        }
     }
 }

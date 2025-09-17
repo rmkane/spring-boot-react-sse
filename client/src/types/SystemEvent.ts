@@ -1,8 +1,10 @@
+import type { SeverityType } from '@/types/Severity'
+
 export interface SystemEvent {
   id: string
   name: string
   description: string
-  severity: 'INFO' | 'WARNING' | 'CRITICAL'
+  severity: SeverityType
   createdAt: string
   updatedAt: string
   active: boolean

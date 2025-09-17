@@ -5,11 +5,12 @@ import { Severity } from '@/models/Severity'
 
 interface EventCardProps {
   event: SystemEvent
+  isNew?: boolean
 }
 
 const FIFTEEN_SECONDS = 15 * 1000
 
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({ event, isNew = false }: EventCardProps) {
   const [isHighlighted, setIsHighlighted] = useState(false)
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -47,8 +48,12 @@ export function EventCard({ event }: EventCardProps) {
 
   return (
     <div
-      className={`rounded-lg border p-4 ${
-        isHighlighted ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-200' : 'border-gray-200 bg-white'
+      className={`event-card rounded-lg border p-4 ${
+        !event.active
+          ? 'border-red-400 bg-red-50 shadow-md ring-2 ring-red-200'
+          : isHighlighted
+            ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-200'
+            : 'border-gray-200 bg-white'
       }`}
     >
       <div className="mb-2 flex items-center justify-between">
@@ -73,8 +78,15 @@ export function EventCard({ event }: EventCardProps) {
           >
             {event.active ? 'Active' : 'Inactive'}
           </span>
-          {isHighlighted && (
-            <span className="animate-pulse rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">NEW</span>
+          {!event.active && (
+            <span className="animate-pulse rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white">
+              DELETING
+            </span>
+          )}
+          {event.active && isHighlighted && (
+            <span className="animate-pulse rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
+              {isNew ? 'NEW' : 'UPDATED'}
+            </span>
           )}
         </div>
         <div className="text-sm text-gray-500">{new Date(event.updatedAt).toLocaleString()}</div>
