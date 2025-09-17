@@ -13,10 +13,15 @@ This project demonstrates Server-Sent Events (SSE) communication between a Sprin
 
 ## Features
 
-- **Spring Boot Server**: Provides SSE endpoint at `/api/events`
-- **React Client**: Consumes SSE messages and displays them in real-time
+- **Spring Boot Server**: Provides SSE endpoint at `/api/events/stream`
+- **React TypeScript Client**: Consumes SSE messages and displays them in real-time
 - **Cross-Origin Support**: Configured for local development
-- **Real-time Updates**: Messages sent every 2 seconds from server to client
+- **Real-time Updates**: Events created/updated/deleted every 10 seconds
+- **Dynamic Event Management**: Server generates random CRUD operations on events
+- **Event Highlighting**: Recently updated events are highlighted for 30 seconds
+- **In-memory Storage**: Events stored in ConcurrentHashMap for fast access
+- **Lombok Integration**: Reduces boilerplate code in Java
+- **Tailwind CSS**: Modern, responsive UI styling
 
 ## Prerequisites
 
@@ -77,28 +82,75 @@ pnpm run dev
 
 ## API Endpoints
 
-- `GET /api/events` - SSE endpoint that streams messages every 2 seconds
+- `GET /api/events/stream` - SSE endpoint that streams event changes in real-time
+- `GET /api/events/initial` - Get all current events (for initial load)
+- `GET /api/events` - Get all events (REST endpoint)
 - `GET /api/health` - Health check endpoint
 
 ## Development
 
-The Spring Boot server sends JSON messages with timestamp and message content. The React client automatically connects to the SSE endpoint and displays incoming messages in real-time.
+The Spring Boot server manages a collection of system events in memory and performs random CRUD operations every 10 seconds. The React client connects to the SSE endpoint and receives real-time updates about event changes.
 
 ### Server Configuration
 
 - Port: 8080
 - CORS enabled for `http://localhost:5173`
-- SSE messages sent every 2 seconds
+- Events updated every 10 seconds via scheduled tasks
+- In-memory storage using ConcurrentHashMap
+- Lombok for reduced boilerplate
+- Jackson for JSON serialization
 
 ### Client Configuration
 
 - Port: `5173` (Vite default)
+- TypeScript with React
+- Tailwind CSS for styling
 - Connects to SSE endpoint automatically
-- Displays connection status
-- Shows last 10 messages
+- Displays connection status and event count
+- Highlights recently updated events (30 seconds)
+- Absolute imports with `@/` alias
+
+### Event Model
+
+Events contain the following properties:
+
+- `id`: Unique identifier (UUID)
+- `name`: Event name
+- `description`: Event description
+- `severity`: CRITICAL, WARNING, or INFO
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last update timestamp
+- `active`: Boolean status
+- `count`: Numeric counter
 
 ## Troubleshooting
 
 1. **CORS Issues**: Make sure the Spring Boot server is running on port 8080
 2. **Connection Issues**: Check that both services are running and accessible
 3. **Build Issues**: Run `make clean` and then `make install` to reset dependencies
+4. **SSE Connection Issues**: Check browser developer tools for SSE connection errors
+5. **Java Version**: Ensure Java 17+ is installed and configured
+6. **Maven Issues**: Try `mvn clean compile` in the server directory
+
+## Architecture
+
+### Server-Side (Spring Boot)
+
+- **EventService**: Manages in-memory event storage and CRUD operations
+- **SseController**: Handles SSE connections and broadcasts event changes
+- **EventSchedulerService**: Triggers random event updates every 10 seconds
+- **SystemEvent**: Data model with Lombok annotations
+- **SseEvent**: Wrapper for SSE messages containing operation type and event data
+
+### Client-Side (React + TypeScript)
+
+- **useSSE**: Custom hook for managing SSE connection and event state
+- **EventCard**: Individual event display component with highlighting logic
+- **EventList**: Container for event cards with sorting
+- **StatusIndicator**: Shows connection status and last update time
+- **Header**: Application header with title
+- **EventsSection**: Main events display section
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0). For the full license text, see the [LICENSE](LICENSE) file in this repository.
