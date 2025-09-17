@@ -1,10 +1,10 @@
 import { Header } from '@/components/Header';
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { EventsSection } from '@/components/EventsSection';
-import { useSSE } from '@/hooks/useSSE';
+import { useEventSSE } from '@/hooks/useEventSSE';
 
 function App() {
-  const { events, isConnected, lastUpdate } = useSSE();
+  const { data: events, isConnected, lastUpdate } = useEventSSE();
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

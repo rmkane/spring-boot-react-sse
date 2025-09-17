@@ -8,6 +8,8 @@ interface EventCardProps {
   event: SystemEvent;
 }
 
+const FIFTEEN_SECONDS = 15 * 1000;
+
 export function EventCard({ event }: EventCardProps) {
   const [isHighlighted, setIsHighlighted] = useState(false);
   const getSeverityIcon = (severity: string) => {
@@ -23,8 +25,8 @@ export function EventCard({ event }: EventCardProps) {
   useEffect(() => {
     const isRecentlyUpdated = () => {
       const updatedTime = new Date(event.updatedAt);
-      const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
-      return updatedTime > thirtySecondsAgo;
+      const fifteenSecondsAgo = new Date(Date.now() - FIFTEEN_SECONDS);
+      return updatedTime > fifteenSecondsAgo;
     };
 
     const checkHighlighting = () => {
