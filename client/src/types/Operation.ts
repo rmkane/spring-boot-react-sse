@@ -1,5 +1,5 @@
-export type CreateOperation = 'CREATE';
-export type UpdateOperation = 'UPDATE';
-export type DeleteOperation = 'DELETE';
+export type CreateOperation = 'CREATE'
+export type UpdateOperation = 'UPDATE'
+export type DeleteOperation = 'DELETE'
 
-export type OperationType = CreateOperation | UpdateOperation | DeleteOperation;
+export type OperationType = CreateOperation | UpdateOperation | DeleteOperation
