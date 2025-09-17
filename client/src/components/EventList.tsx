@@ -11,12 +11,10 @@ export function EventList({ events, newEventIds }: EventListProps) {
     return <div className="py-8 text-center text-gray-500">Loading events...</div>
   }
 
-  // Sort events by updatedAt in descending order (most recent first)
-  const sortedEvents = [...events].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-
+  // Events are already sorted by updatedAt in descending order (most recent first) in useEventSSE
   return (
     <div className="event-list space-y-4">
-      {sortedEvents.map((event) => (
+      {events.map((event) => (
         <EventCard key={event.id} event={event} isNew={newEventIds.has(event.id)} />
       ))}
     </div>

@@ -79,9 +79,7 @@ export function EventCard({ event, isNew = false }: EventCardProps) {
             {event.active ? 'Active' : 'Inactive'}
           </span>
           {!event.active && (
-            <span className="animate-pulse rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white">
-              DELETING
-            </span>
+            <span className="rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white">DELETED</span>
           )}
           {event.active && isHighlighted && (
             <span className="animate-pulse rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">

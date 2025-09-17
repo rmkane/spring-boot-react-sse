@@ -18,21 +18,19 @@ help: ## Show this help message
 
 install: ## Install dependencies for both client and server
 	@echo "Installing client dependencies..."
-	cd client && pnpm install
+	cd client && $(MAKE) install
 	@echo "Installing server dependencies..."
-	cd server && mvn clean install -DskipTests
+	cd server && $(MAKE) install
 
 # =============================================================================
 # DEVELOPMENT (START/STOP)
 # =============================================================================
 
 start-client: ## Start the React client (Vite dev server)
-	@echo "Starting React client on http://localhost:5173"
-	cd client && pnpm run dev
+	cd client && $(MAKE) start
 
 start-server: ## Start the Spring Boot server
-	@echo "Starting Spring Boot server on http://localhost:8080"
-	cd server && mvn spring-boot:run
+	cd server && $(MAKE) start
 
 start-all: ## Start both client and server concurrently
 	@echo "Starting both client and server..."
@@ -40,17 +38,15 @@ start-all: ## Start both client and server concurrently
 	@echo "Server will be available at http://localhost:8080"
 	@echo "Press Ctrl+C to stop both services"
 	@trap 'kill %1 %2' INT; \
-	cd client && pnpm run dev & \
-	cd server && mvn spring-boot:run & \
+	cd client && $(MAKE) start & \
+	cd server && $(MAKE) start & \
 	wait
 
 stop-client: ## Stop the React client
-	@echo "Stopping React client..."
-	pkill -f "pnpm run dev" || true
+	cd client && $(MAKE) stop
 
 stop-server: ## Stop the Spring Boot server
-	@echo "Stopping Spring Boot server..."
-	pkill -f "mvn spring-boot:run" || true
+	cd server && $(MAKE) stop
 
 stop-all: stop-client stop-server ## Stop all running services
 	@echo "All services stopped"
@@ -60,12 +56,10 @@ stop-all: stop-client stop-server ## Stop all running services
 # =============================================================================
 
 clean-client: ## Clean client build artifacts
-	@echo "Cleaning client build artifacts..."
-	cd client && rm -rf node_modules dist
+	cd client && $(MAKE) clean
 
 clean-server: ## Clean server build artifacts
-	@echo "Cleaning server build artifacts..."
-	cd server && mvn clean
+	cd server && $(MAKE) clean
 
 clean-all: clean-client clean-server ## Clean build artifacts
 	@echo "Clean completed"
@@ -75,12 +69,10 @@ clean-all: clean-client clean-server ## Clean build artifacts
 # =============================================================================
 
 build-client: ## Build the React client for production
-	@echo "Building React client for production..."
-	cd client && pnpm run build
+	cd client && $(MAKE) build
 
 build-server: ## Build the Spring Boot server
-	@echo "Building Spring Boot server..."
-	cd server && mvn clean package -DskipTests
+	cd server && $(MAKE) build
 
 build-all: build-client build-server ## Build both client and server
 
@@ -89,11 +81,9 @@ build-all: build-client build-server ## Build both client and server
 # =============================================================================
 
 test-client: ## Run client tests
-	@echo "Running client tests..."
-	cd client && pnpm test
+	cd client && $(MAKE) test
 
 test-server: ## Run server tests
-	@echo "Running server tests..."
-	cd server && mvn test
+	cd server && $(MAKE) test
 
 test-all: test-client test-server ## Run all tests
