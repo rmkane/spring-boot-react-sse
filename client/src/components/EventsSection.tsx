@@ -4,9 +4,10 @@ import { EventList } from '@/components/EventList'
 interface EventsSectionProps {
   events: SystemEvent[]
   newEventIds: Set<string>
+  locale?: string
 }
 
-export function EventsSection({ events, newEventIds }: EventsSectionProps) {
+export function EventsSection({ events, newEventIds, locale }: EventsSectionProps) {
   const activeCount = events.filter((event) => event.active).length
   const inactiveCount = events.filter((event) => !event.active).length
 
@@ -27,7 +28,7 @@ export function EventsSection({ events, newEventIds }: EventsSectionProps) {
       </div>
 
       <div className="p-6">
-        <EventList events={events} newEventIds={newEventIds} />
+        <EventList events={events} newEventIds={newEventIds} locale={locale} />
       </div>
     </div>
   )

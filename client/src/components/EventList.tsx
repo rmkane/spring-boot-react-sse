@@ -4,9 +4,10 @@ import { EventCard } from '@/components/EventCard'
 interface EventListProps {
   events: SystemEvent[]
   newEventIds: Set<string>
+  locale?: string
 }
 
-export function EventList({ events, newEventIds }: EventListProps) {
+export function EventList({ events, newEventIds, locale }: EventListProps) {
   if (events.length === 0) {
     return <div className="py-8 text-center text-gray-500">Loading events...</div>
   }
@@ -15,7 +16,7 @@ export function EventList({ events, newEventIds }: EventListProps) {
   return (
     <div className="event-list space-y-4">
       {events.map((event) => (
-        <EventCard key={event.id} event={event} isNew={newEventIds.has(event.id)} />
+        <EventCard key={event.id} event={event} isNew={newEventIds.has(event.id)} locale={locale} />
       ))}
     </div>
   )

@@ -7,11 +7,12 @@ import { LiveTimestamp } from '@/components/LiveTimestamp'
 interface EventCardProps {
   event: SystemEvent
   isNew?: boolean
+  locale?: string
 }
 
 const FIFTEEN_SECONDS = 15 * 1000
 
-export function EventCard({ event, isNew = false }: EventCardProps) {
+export function EventCard({ event, isNew = false, locale }: EventCardProps) {
   const [isHighlighted, setIsHighlighted] = useState(false)
 
   const getSeverityIcon = (severity: string) => {
@@ -119,7 +120,7 @@ export function EventCard({ event, isNew = false }: EventCardProps) {
           {renderStatusBadges()}
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          <LiveTimestamp dateString={event.updatedAt} />
+          <LiveTimestamp dateString={event.updatedAt} locale={locale} />
         </div>
       </div>
 
@@ -129,7 +130,7 @@ export function EventCard({ event, isNew = false }: EventCardProps) {
         <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
           <span className="font-medium text-blue-600 dark:text-blue-400">Count: {event.count}</span>
           <span>
-            Created: <LiveTimestamp dateString={event.createdAt} />
+            Created: <LiveTimestamp dateString={event.createdAt} locale={locale} />
           </span>
         </div>
 

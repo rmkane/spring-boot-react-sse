@@ -245,7 +245,7 @@ export const formatSmartDate = (
 
   // Use relative time for recent dates
   if (diffMinutes <= recentThresholdMinutes && diffMinutes >= 0) {
-    return formatRelativeTime(dateString)
+    return formatRelativeTime(dateString, locale)
   }
 
   // Use formatted date for older dates
