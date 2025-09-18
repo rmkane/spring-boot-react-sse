@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import type { SystemEvent } from '@/types/SystemEvent'
-import { formatSmartDate } from '@/utils/dateUtils'
 import { Severity } from '@/models/Severity'
+import { LiveTimestamp } from '@/components/LiveTimestamp'
 
 interface EventCardProps {
   event: SystemEvent
@@ -118,7 +118,9 @@ export function EventCard({ event, isNew = false }: EventCardProps) {
           </span>
           {renderStatusBadges()}
         </div>
-        <div className="text-sm text-gray-500 dark:text-gray-400">{formatSmartDate(event.updatedAt)}</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          <LiveTimestamp dateString={event.updatedAt} />
+        </div>
       </div>
 
       <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">{event.description}</p>
@@ -126,7 +128,9 @@ export function EventCard({ event, isNew = false }: EventCardProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
           <span className="font-medium text-blue-600 dark:text-blue-400">Count: {event.count}</span>
-          <span>Created: {formatSmartDate(event.createdAt)}</span>
+          <span>
+            Created: <LiveTimestamp dateString={event.createdAt} />
+          </span>
         </div>
 
         <div className="mt-2 font-mono text-xs text-gray-400 dark:text-gray-500">ID: {event.id}</div>
