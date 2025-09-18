@@ -14,13 +14,13 @@ export function EventsSection({ events, newEventIds }: EventsSectionProps) {
     if (inactiveCount === 0) {
       return null
     }
-    return <span className="ml-2 text-red-600">({inactiveCount} inactive)</span>
+    return <span className="ml-2 text-red-600 dark:text-red-400">({inactiveCount} inactive)</span>
   }
 
   return (
-    <div className="rounded-lg border bg-white shadow-sm">
-      <div className="border-b border-gray-200 px-6 py-4">
-        <h2 className="text-xl font-semibold text-gray-900">
+    <div className="rounded-lg border bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           System Events: {activeCount}
           {renderInactiveCount()}
         </h2>

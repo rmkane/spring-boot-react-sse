@@ -7,7 +7,7 @@ function App() {
   const { data: events, isConnected, lastUpdate, newEventIds } = useEventSSE()
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6 dark:bg-gray-900">
       <div className="mx-auto max-w-6xl">
         <Header />
         <StatusIndicator isConnected={isConnected} lastUpdate={lastUpdate} />
