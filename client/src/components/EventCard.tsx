@@ -31,10 +31,13 @@ export function EventCard({ event, isNew = false }: EventCardProps) {
     if (!event.active) {
       return 'border-red-400 bg-red-50 shadow-md ring-2 ring-red-200 dark:border-red-500 dark:bg-red-900/20 dark:ring-red-800'
     }
-    if (isHighlighted) {
+    if (!isHighlighted) {
+      return 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
+    }
+    if (isNew) {
       return 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-200 dark:border-blue-500 dark:bg-blue-900/20 dark:ring-blue-800'
     }
-    return 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
+    return 'border-yellow-400 bg-yellow-50 shadow-md ring-2 ring-yellow-200 dark:border-yellow-500 dark:bg-yellow-900/20 dark:ring-yellow-800'
   }
 
   const getSeverityBadgeStyling = () => {
@@ -68,10 +71,12 @@ export function EventCard({ event, isNew = false }: EventCardProps) {
 
     // NEW/UPDATED badge for active highlighted events
     if (event.active && isHighlighted) {
+      const backgroundColor = isNew ? 'bg-blue-500' : 'bg-yellow-500'
+
       badges.push(
         <span
           key="highlight"
-          className="animate-pulse rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white"
+          className={`animate-pulse rounded-full px-2 py-1 text-xs font-medium text-white ${backgroundColor}`}
         >
           {isNew ? 'NEW' : 'UPDATED'}
         </span>,
