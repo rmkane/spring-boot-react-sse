@@ -5,7 +5,7 @@
 .PHONY: stop-client stop-server stop-all
 .PHONY: clean-client clean-server clean-all
 .PHONY: build-client build-server build-all
-.PHONY: test-client test-server test-all
+.PHONY: test-client test-client-watch test-client-ui test-server test-all
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -80,8 +80,14 @@ build-all: build-client build-server ## Build both client and server
 # TESTING
 # =============================================================================
 
-test-client: ## Run client tests
+test-client: ## Run client tests (non-watch mode)
 	cd client && $(MAKE) test
+
+test-client-watch: ## Run client tests in watch mode
+	cd client && $(MAKE) test-watch
+
+test-client-ui: ## Run client tests with UI
+	cd client && $(MAKE) test-ui
 
 test-server: ## Run server tests
 	cd server && $(MAKE) test

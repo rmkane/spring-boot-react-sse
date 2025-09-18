@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install start stop clean build test
+.PHONY: help install start stop clean build test test-watch test-ui
 
 help: ## Show this help message
 	@echo "Client commands:"
@@ -27,6 +27,14 @@ build: ## Build the React client for production
 	@echo "Building React client for production..."
 	pnpm run build
 
-test: ## Run client tests
+test: ## Run client tests (non-watch mode)
 	@echo "Running client tests..."
 	pnpm test
+
+test-watch: ## Run client tests in watch mode
+	@echo "Running client tests in watch mode..."
+	pnpm run test:watch
+
+test-ui: ## Run client tests with UI
+	@echo "Running client tests with UI..."
+	pnpm run test:ui
