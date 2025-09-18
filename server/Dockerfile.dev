@@ -1,0 +1,21 @@
+# Development Dockerfile for Spring Boot server
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven
+
+# Copy Maven files first for better caching
+COPY pom.xml ./
+
+# Download dependencies
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+EXPOSE 8080
+
+# Run in development mode with hot reload
+CMD ["mvn", "spring-boot:run"]

@@ -1,6 +1,6 @@
 package com.example.sse.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -17,8 +17,8 @@ public class SystemEvent {
     private String name;
     private String description;
     private Severity severity;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private boolean active;
     private int count;
 }

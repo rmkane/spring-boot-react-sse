@@ -6,6 +6,7 @@
 .PHONY: clean-client clean-server clean-all
 .PHONY: build-client build-server build-all
 .PHONY: test-client test-client-watch test-client-ui test-server test-all
+.PHONY: docker-dev docker-prod docker-stop docker-clean
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -93,3 +94,25 @@ test-server: ## Run server tests
 	cd server && $(MAKE) test
 
 test-all: test-client test-server ## Run all tests
+
+# =============================================================================
+# DOCKER
+# =============================================================================
+
+docker-dev: ## Start development environment with Docker
+	@echo "Starting development environment with Docker..."
+	docker-compose -f docker-compose.dev.yml up --build
+
+docker-prod: ## Start production environment with Docker
+	@echo "Starting production environment with Docker..."
+	docker-compose up --build
+
+docker-stop: ## Stop all Docker containers
+	@echo "Stopping Docker containers..."
+	docker-compose -f docker-compose.dev.yml down
+	docker-compose down
+
+docker-clean: ## Clean Docker images and containers
+	@echo "Cleaning Docker images and containers..."
+	docker-compose -f docker-compose.dev.yml down --rmi all --volumes --remove-orphans
+	docker-compose down --rmi all --volumes --remove-orphans

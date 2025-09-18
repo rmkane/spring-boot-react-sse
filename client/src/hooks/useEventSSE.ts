@@ -55,7 +55,9 @@ export function useEventSSE() {
         error.type === 'error' ? 'Connection failed or server unavailable' : `Event error: ${error.type}`
       logSSE('ERROR', `SSE connection error: ${errorMessage}`, 'connection')
     },
-    url: 'http://localhost:8080/api/events/stream',
+    url: import.meta.env.VITE_API_URL
+      ? `${import.meta.env.VITE_API_URL}/api/events/stream` // Docker dev: localhost:8080
+      : 'http://localhost:8080/api/events/stream', // Local dev: localhost:8080
   })
 
   // Sort events: active first (by latest updated), then inactive (by latest updated)

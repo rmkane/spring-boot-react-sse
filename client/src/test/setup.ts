@@ -3,6 +3,8 @@
  * This file runs before all tests
  */
 
+import { beforeEach } from 'vitest'
+
 // Mock console methods to reduce noise in tests
 const originalConsole = { ...console }
 

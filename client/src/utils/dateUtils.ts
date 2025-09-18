@@ -21,11 +21,24 @@ const AVERAGE_DAYS_PER_MONTH = 30.44
 const AVERAGE_DAYS_PER_YEAR = 365.25
 
 /**
+ * Normalize a date string to ensure proper UTC parsing
+ * Handles timestamps without Z suffix by appending Z
+ */
+const normalizeDateString = (dateString: string): string => {
+  // If already has timezone info (Z, +, or -), return as-is
+  if (dateString.includes('Z') || dateString.includes('+') || dateString.includes('-', 10)) {
+    return dateString
+  }
+  // Otherwise, assume UTC and append Z
+  return `${dateString}Z`
+}
+
+/**
  * Format a date string as a relative time (e.g., "2 minutes ago", "in 3 hours")
  * Uses native Intl.RelativeTimeFormat for zero dependencies
  */
 export const formatRelativeTime = (dateString: string, locale?: string): string => {
-  const date = new Date(dateString)
+  const date = new Date(normalizeDateString(dateString))
   if (isNaN(date.getTime())) {
     throw new Error(`Invalid date string: ${dateString}`)
   }
@@ -135,7 +148,7 @@ export const formatCompactDuration = (
 ): string => {
   const { showSeconds = true, showZeroMinutes = false } = options
 
-  const date = new Date(dateString)
+  const date = new Date(normalizeDateString(dateString))
   const now = new Date()
   const diffMs = Math.abs(now.getTime() - date.getTime())
 
@@ -172,7 +185,7 @@ export const formatCompactDuration = (
  * @param dateString ISO date string
  */
 export const formatPreciseDuration = (dateString: string): string => {
-  const date = new Date(dateString)
+  const date = new Date(normalizeDateString(dateString))
   const now = new Date()
   const diffMs = Math.abs(now.getTime() - date.getTime())
 
@@ -188,7 +201,7 @@ export const getAgeInUnit = (
   dateString: string,
   unit: 'seconds' | 'minutes' | 'hours' | 'days' | 'months' | 'years',
 ): number => {
-  const date = new Date(dateString)
+  const date = new Date(normalizeDateString(dateString))
   const now = new Date()
   const diffMs = Math.abs(now.getTime() - date.getTime())
 
@@ -211,17 +224,17 @@ export const getAgeInUnit = (
 }
 
 /**
- * Check if a date is recent (within the last N minutes)
+ * Check if a date is recent (within the last N seconds)
  * @param dateString ISO date string
- * @param minutes Number of minutes to consider "recent"
+ * @param seconds Number of seconds to consider "recent"
  */
-export const isRecent = (dateString: string, minutes: number = 15): boolean => {
-  const date = new Date(dateString)
+export const isRecent = (dateString: string, seconds: number = 300): boolean => {
+  const date = new Date(normalizeDateString(dateString))
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
-  const diffMinutes = diffMs / MILLISECONDS_PER_MINUTE
+  const diffSeconds = diffMs / MILLISECONDS_PER_SECOND
 
-  return diffMinutes <= minutes && diffMinutes >= 0
+  return diffSeconds <= seconds && diffSeconds >= 0
 }
 
 /**
@@ -239,7 +252,7 @@ export const formatSmartDate = (
 ): string => {
   const { recentThresholdMinutes = 60, showTime = true, locale } = options
 
-  const date = new Date(dateString)
+  const date = new Date(normalizeDateString(dateString))
   const now = new Date()
   const diffMinutes = (now.getTime() - date.getTime()) / MILLISECONDS_PER_MINUTE
 

@@ -51,6 +51,15 @@ describe('dateUtils', () => {
       const now = '2024-01-15T12:00:00Z'
       expect(formatRelativeTime(now)).toBe('now')
     })
+
+    it('should handle UTC timestamps without Z suffix', () => {
+      const utcTime = '2024-01-15T11:58:00' // No Z suffix
+      const utcTimeWithZ = '2024-01-15T11:58:00Z' // With Z suffix
+      const result1 = formatRelativeTime(utcTime)
+      const result2 = formatRelativeTime(utcTimeWithZ)
+      expect(result1).toBe(result2) // Should produce same result
+      expect(result1).toMatch(/2.*minute/)
+    })
   })
 
   describe('formatDuration', () => {
@@ -134,7 +143,7 @@ describe('dateUtils', () => {
 
   describe('isRecent', () => {
     it('should return true for recent times', () => {
-      const recentTime = '2024-01-15T11:50:00Z' // 10 minutes ago
+      const recentTime = '2024-01-15T11:59:50Z' // 10 seconds ago
       expect(isRecent(recentTime, 15)).toBe(true)
     })
 
@@ -144,13 +153,16 @@ describe('dateUtils', () => {
     })
 
     it('should return false for future times', () => {
-      const futureTime = '2024-01-15T12:05:00Z' // 5 minutes in future
+      const futureTime = '2024-01-15T12:00:05Z' // 5 seconds in future
       expect(isRecent(futureTime, 15)).toBe(false)
     })
 
-    it('should use default threshold of 15 minutes', () => {
-      const recentTime = '2024-01-15T11:50:00Z' // 10 minutes ago
+    it('should use default threshold of 300 seconds (5 minutes)', () => {
+      const recentTime = '2024-01-15T11:58:00Z' // 2 minutes ago
       expect(isRecent(recentTime)).toBe(true)
+
+      const oldTime = '2024-01-15T11:50:00Z' // 10 minutes ago
+      expect(isRecent(oldTime)).toBe(false)
     })
   })
 

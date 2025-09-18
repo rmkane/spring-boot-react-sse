@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import type { SystemEvent } from '@/types/SystemEvent'
+import { isRecent } from '@/utils/dateUtils'
 import { Severity } from '@/models/Severity'
 import { LiveTimestamp } from '@/components/LiveTimestamp'
 
@@ -9,8 +10,6 @@ interface EventCardProps {
   isNew?: boolean
   locale?: string
 }
-
-const FIFTEEN_SECONDS = 15 * 1000
 
 export function EventCard({ event, isNew = false, locale }: EventCardProps) {
   const [isHighlighted, setIsHighlighted] = useState(false)
@@ -88,9 +87,7 @@ export function EventCard({ event, isNew = false, locale }: EventCardProps) {
   // Set up a timer to check highlighting every second
   useEffect(() => {
     const isRecentlyUpdated = () => {
-      const updatedTime = new Date(event.updatedAt)
-      const fifteenSecondsAgo = new Date(Date.now() - FIFTEEN_SECONDS)
-      return updatedTime > fifteenSecondsAgo
+      return isRecent(event.updatedAt, 15) // 15 seconds threshold
     }
 
     const checkHighlighting = () => {

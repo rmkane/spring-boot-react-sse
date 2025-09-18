@@ -1,6 +1,6 @@
 package com.example.sse.service.impl;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +59,8 @@ public class EventServiceImpl implements EventService {
                 .name(eventNames[i])
                 .description(descriptions[i])
                 .severity(severities[random.nextInt(severities.length)])
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .active(true)
                 .count(random.nextInt(100))
                 .build();
@@ -101,8 +101,8 @@ public class EventServiceImpl implements EventService {
         if (event.getId() == null) {
             event.setId(UUID.randomUUID());
         }
-        event.setCreatedAt(LocalDateTime.now());
-        event.setUpdatedAt(LocalDateTime.now());
+        event.setCreatedAt(Instant.now());
+        event.setUpdatedAt(Instant.now());
         events.put(event.getId(), event);
         log.info("Created event: {}", event.getName());
         return event;
@@ -111,7 +111,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public SystemEvent updateEvent(SystemEvent event) {
         if (events.containsKey(event.getId())) {
-            event.setUpdatedAt(LocalDateTime.now());
+            event.setUpdatedAt(Instant.now());
             events.put(event.getId(), event);
             log.info("Updated event: {}", event.getName());
             return event;
@@ -178,8 +178,8 @@ public class EventServiceImpl implements EventService {
             .name(eventNames[random.nextInt(eventNames.length)])
             .description(descriptions[random.nextInt(descriptions.length)])
             .severity(severities[random.nextInt(severities.length)])
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
+            .createdAt(Instant.now())
+            .updatedAt(Instant.now())
             .active(true) // CREATE operations should always create active events
             .count(random.nextInt(1000))
             .build();
@@ -204,7 +204,7 @@ public class EventServiceImpl implements EventService {
 
         // Randomly update event properties
         randomEvent.setCount(randomEvent.getCount() + random.nextInt(50) + 1);
-        randomEvent.setUpdatedAt(LocalDateTime.now());
+        randomEvent.setUpdatedAt(Instant.now());
 
         // Randomly change severity
         if (random.nextBoolean()) {
@@ -241,7 +241,7 @@ public class EventServiceImpl implements EventService {
 
         // Mark as inactive instead of removing
         eventToDelete.setActive(false);
-        eventToDelete.setUpdatedAt(LocalDateTime.now());
+        eventToDelete.setUpdatedAt(Instant.now());
         events.put(eventToDelete.getId(), eventToDelete);
 
         log.info("Marked event as inactive: {} (was active: {}, count: {})",
@@ -262,7 +262,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void cleanupInactiveEvents() {
-        LocalDateTime fiveSecondsAgo = LocalDateTime.now().minusSeconds(5);
+        Instant fiveSecondsAgo = Instant.now().minusSeconds(5);
 
         List<UUID> eventsToRemove = events.values().stream()
             .filter(event -> !event.isActive() && event.getUpdatedAt().isBefore(fiveSecondsAgo))
