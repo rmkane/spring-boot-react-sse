@@ -26,7 +26,7 @@ const colors = {
 
   // Operations
   create: '#10b981', // bright green
-  update: '#3b82f6', // bright blue
+  update: '#FBA131', // bright orange
   delete: '#ef4444', // bright red
 
   // Text colors for dark theme
@@ -118,20 +118,16 @@ class Logger {
   }
 
   // Specialized methods for common use cases
-  sseEvent(operation: string, eventName: string, eventId: string, isActive: boolean): void {
-    const status = isActive ? 'ACTIVE' : 'INACTIVE'
-    const statusColor = isActive ? colors.create : colors.delete
+  sseEvent(operation: string, eventName: string, eventId: string): void {
     const operationColor = colors[operation.toLowerCase() as keyof typeof colors] || colors.info
 
     console.log(
-      `%c[${new Date().toLocaleTimeString()}] %c📡 %cSSE %c${operation} %cevent: %c${eventName} %c(${status}) %cID: ${eventId}`,
+      `%c[${new Date().toLocaleTimeString()}] %c📡 SSE %c${operation} %cevent: %c${eventName} %cID: ${eventId}`,
       `color: ${colors.timestamp}`,
       '',
-      `color: ${colors.sse}; font-weight: bold`,
       `color: ${operationColor}; font-weight: bold`,
       `color: ${colors.text}`,
       `color: ${colors.highlight}`,
-      `color: ${statusColor}; font-weight: bold`,
       `color: ${colors.muted}`,
     )
   }
@@ -175,8 +171,8 @@ export const logger = new Logger()
 export { Logger }
 
 // Convenience exports for common logging patterns
-export const logSSE = (operation: string, eventName: string, eventId: string, isActive: boolean) =>
-  logger.sseEvent(operation, eventName, eventId, isActive)
+export const logSSE = (operation: string, eventName: string, eventId: string) =>
+  logger.sseEvent(operation, eventName, eventId)
 
 export const logPerformance = (action: string, duration: number, details?: string) =>
   logger.performance(action, duration, details)

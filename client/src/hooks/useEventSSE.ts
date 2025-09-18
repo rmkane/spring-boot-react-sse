@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { SseEvent } from '@/types/SseEvent'
 import type { SystemEvent } from '@/types/SystemEvent'
@@ -14,17 +14,17 @@ export function useEventSSE() {
 
     switch (operation) {
       case Operation.CREATE:
-        logSSE(operation, systemEvent.name, systemEvent.id, systemEvent.active)
+        logSSE(operation, systemEvent.name, systemEvent.id)
         // Mark this event as new
         setNewEventIds((prev) => new Set(prev).add(systemEvent.id))
         return [systemEvent, ...currentEvents]
 
       case Operation.UPDATE:
-        logSSE(operation, systemEvent.name, systemEvent.id, systemEvent.active)
+        logSSE(operation, systemEvent.name, systemEvent.id)
         return currentEvents.map((e) => (e.id === systemEvent.id ? systemEvent : e))
 
       case Operation.DELETE:
-        logSSE(operation, systemEvent.name, systemEvent.id, systemEvent.active)
+        logSSE(operation, systemEvent.name, systemEvent.id)
         // Mark the event as inactive instead of removing it
         return currentEvents.map((e) => (e.id === systemEvent.id ? { ...systemEvent, active: false } : e))
 
@@ -38,13 +38,23 @@ export function useEventSSE() {
       'event-change': handleEventChange,
       'initial-events': (data: unknown) => {
         const events = data as SystemEvent[]
-        logSSE('INITIAL', `Received ${events.length} events`, 'initial-load', true)
+        const activeCount = events.filter((e) => e.active).length
+        const inactiveCount = events.filter((e) => !e.active).length
+        logSSE(
+          'INITIAL',
+          `Received ${events.length} events (${activeCount} active, ${inactiveCount} inactive)`,
+          'initial-load',
+        )
         return events
       },
     },
     initialData: [] as SystemEvent[],
-    onConnect: () => logSSE('CONNECT', 'SSE connection opened', 'connection', true),
-    onError: (error) => logSSE('ERROR', `SSE connection error: ${error}`, 'connection', false),
+    onConnect: () => logSSE('CONNECT', 'SSE connection opened', 'connection'),
+    onError: (error) => {
+      const errorMessage =
+        error.type === 'error' ? 'Connection failed or server unavailable' : `Event error: ${error.type}`
+      logSSE('ERROR', `SSE connection error: ${errorMessage}`, 'connection')
+    },
     url: 'http://localhost:8080/api/events/stream',
   })
 
@@ -57,6 +67,13 @@ export function useEventSSE() {
     // Then sort by updatedAt (latest first)
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   })
+
+  // Debug logging for event count changes
+  useEffect(() => {
+    const activeCount = sortedEvents.filter((e) => e.active).length
+    const inactiveCount = sortedEvents.filter((e) => !e.active).length
+    logSSE('COUNT', `Total: ${sortedEvents.length} (${activeCount} active, ${inactiveCount} inactive)`, 'state')
+  }, [sortedEvents])
 
   return {
     ...sseResult,
