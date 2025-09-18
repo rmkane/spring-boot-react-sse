@@ -232,8 +232,9 @@ public class EventServiceImpl implements EventService {
             .filter(SystemEvent::isActive)
             .collect(Collectors.toList());
 
-        if (activeEvents.size() <= 2) { // Keep at least 2 active events
-            return updateExistingEvent(); // Update instead of delete
+        // Keep at least 2 active events - update instead of delete
+        if (activeEvents.size() <= 2) {
+            return updateExistingEvent();
         }
 
         SystemEvent eventToDelete = activeEvents.get(random.nextInt(activeEvents.size()));
@@ -268,9 +269,11 @@ public class EventServiceImpl implements EventService {
             .map(SystemEvent::getId)
             .collect(Collectors.toList());
 
-        if (!eventsToRemove.isEmpty()) {
-            eventsToRemove.forEach(events::remove);
-            log.info("Cleaned up {} inactive events", eventsToRemove.size());
+        if (eventsToRemove.isEmpty()) {
+            return;
         }
+
+        eventsToRemove.forEach(events::remove);
+        log.info("Cleaned up {} inactive events", eventsToRemove.size());
     }
 }
