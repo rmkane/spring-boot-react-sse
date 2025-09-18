@@ -24,7 +24,7 @@ const AVERAGE_DAYS_PER_YEAR = 365.25
  * Format a date string as a relative time (e.g., "2 minutes ago", "in 3 hours")
  * Uses native Intl.RelativeTimeFormat for zero dependencies
  */
-export const formatRelativeTime = (dateString: string): string => {
+export const formatRelativeTime = (dateString: string, locale?: string): string => {
   const date = new Date(dateString)
   if (isNaN(date.getTime())) {
     throw new Error(`Invalid date string: ${dateString}`)
@@ -32,7 +32,14 @@ export const formatRelativeTime = (dateString: string): string => {
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
-  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+  // Handle invalid or empty locale gracefully
+  let rtf: Intl.RelativeTimeFormat
+  try {
+    rtf = new Intl.RelativeTimeFormat(locale || undefined, { numeric: 'auto' })
+  } catch {
+    // Fall back to default locale if the provided locale is invalid
+    rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
+  }
 
   // Past dates (negative diff - date is in the past)
   if (diffInSeconds > 0) {
@@ -45,7 +52,7 @@ export const formatRelativeTime = (dateString: string): string => {
 
   // Exactly now (0 seconds difference)
   if (diffInSeconds === 0) {
-    return '0 seconds ago'
+    return rtf.format(0, 'second')
   }
 
   // Future dates (positive diff - date is in the future)
@@ -230,7 +237,7 @@ export const formatSmartDate = (
     locale?: string
   } = {},
 ): string => {
-  const { recentThresholdMinutes = 60, showTime = true, locale = 'en-US' } = options
+  const { recentThresholdMinutes = 60, showTime = true, locale } = options
 
   const date = new Date(dateString)
   const now = new Date()

@@ -49,7 +49,7 @@ describe('dateUtils', () => {
 
     it('should handle edge case of exactly now', () => {
       const now = '2024-01-15T12:00:00Z'
-      expect(formatRelativeTime(now)).toBe('0 seconds ago')
+      expect(formatRelativeTime(now)).toBe('now')
     })
   })
 
